@@ -362,7 +362,7 @@
             
             let retryCount = 0;
             const maxRetries = 20;
-            const retryInterval = 2000; // 3秒重试一次
+            const retryInterval = 3000; // 3秒重试一次
             
             function sendConfigRequest() {
                 if (retryCount >= maxRetries) {
@@ -415,7 +415,7 @@
             // 检查配网状态
             function checkConfigStatus() {
                 const startTime = Date.now();
-                const timeout = 60000; // 1分钟超时
+                const timeout = 300000; // 1分钟超时
                 const checkInterval = 2000; // 每2秒检查一次
 
                 function checkStatus() {
