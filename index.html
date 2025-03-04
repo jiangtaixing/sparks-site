@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>WiFi配网系统</title>
     <link rel="stylesheet" href="checkmark.css">
     <style>
@@ -358,8 +361,8 @@
             };
             
             let retryCount = 0;
-            const maxRetries = 5;
-            const retryInterval = 3000; // 3秒重试一次
+            const maxRetries = 20;
+            const retryInterval = 2000; // 3秒重试一次
             
             function sendConfigRequest() {
                 if (retryCount >= maxRetries) {
@@ -374,7 +377,7 @@
                     // 3秒后返回第三页
                     setTimeout(() => {
                         showPage(page3);
-                    }, 3000);
+                    }, 2000);
                     return;
                 }
                 
