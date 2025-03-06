@@ -299,14 +299,24 @@
                         deviceBtn.className = 'device-btn';
                         deviceBtn.setAttribute('data-device', device.device_id);
                         deviceBtn.textContent = device.device_id;
-
-                        if (device.alive === 0) {
-                            deviceBtn.style.backgroundColor = 'green';
-                        } else if (device.alive === 1) {
-                            deviceBtn.style.backgroundColor = 'gray';
-                            deviceBtn.style.pointerEvents = 'none'; // 禁用点击
+                        
+                        if (device.is_alive === 1) {
+                            deviceBtn.classList.add('disabled');
+                            deviceBtn.style.backgroundColor = '#ccc';
+                            deviceBtn.style.cursor = 'not-allowed';
+                        } else {
+                            deviceBtn.addEventListener('click', function() {
+                                if (!this.classList.contains('disabled')) {
+                                    document.querySelectorAll('.device-btn').forEach(btn => {
+                                        btn.classList.remove('selected');
+                                    });
+                                    this.classList.add('selected');
+                                    selectedDevice = device.device_id;
+                                    next1.disabled = false;
+                                }
+                            });
                         }
-
+                        
                         deviceContainer.appendChild(deviceBtn);
                     });
                 })
