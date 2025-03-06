@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>WiFi配网系统</title>
-    <link rel="stylesheet" href="checkmark.css">
+    <link rel="stylesheet" href="../static/checkmark.css">
     <style>
         * {
             margin: 0;
@@ -193,16 +193,27 @@
         .loading-animation .checkmark-container {
             margin-top: 20px;
         }
+       #user-id-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+    <div id="user-id-container" style="display: none;">
+             <span id="user-id">{{userId}}</span>
+        </div>
         <!-- 第一页：选择设备 -->
         <div class="page active" id="page1">
             <h2>选择您的星火</h2>
-            <div class="device-btn" data-device="s362225">s362225</div>
-            <div class="device-btn" data-device="S362226">S362226</div>
-            <div class="device-btn" data-device="S362227">S362227</div>
+            <div class="device-btn" id="device-container"></div>
             <div class="btn-container">
                 <button class="btn" id="next1">下一步</button>
             </div>
@@ -212,7 +223,7 @@
         <div class="page" id="page2">
             <h2>星火设备开机指导</h2>
             <div class="gif-container">
-                <img src="./connect.gif" alt="设备连接指导">
+                <img src="../static/connect.gif" alt="设备连接指导">
             </div>
             <div class="btn-container">
                 <button class="btn btn-back" id="back2">返回</button>
@@ -241,7 +252,7 @@
         <div class="page" id="page4">
             <h2>无线配网</h2>
             <div class="gif-container" id="gif-container">
-                <img src="./setwifi.gif" alt="配网准备">
+                <img src="../static/setwifi.gif" alt="配网准备">
             </div>
             <div class="loading-animation" id="loading-animation">
                 <div class="stage" id="stage-text">配置提交中...</div>
@@ -259,68 +270,51 @@
     </div>
 
     <script>
-        // 全局变量
-        let selectedDevice = '';
-        
-        // 检查登录状态
-        function checkLoginStatus() {
-            const accessToken = localStorage.getItem('accessToken');
-            if (!accessToken) {
-                // 构建授权URL
-                const clientId = 'your_client_id'; // 替换为实际的client_id
-                const redirectUri = encodeURIComponent(window.location.origin);
-                const state = Math.random().toString(36).substring(7);
-                localStorage.setItem('oauth_state', state);
-                
-                const authUrl = `https://it.ctrip.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=base`;
-                window.location.href = authUrl;
-                return false;
-            }
-            return true;
+
+        // 显示用户ID
+        userId = '{{$userId}}';
+        function showUserId(userId) {
+            document.getElementById('user-id').textContent = {{userId}};
+            {% comment %} document.getElementById('user-id-container').style.display = 'block'; {% endcomment %}
         }
-        
-        // 处理授权回调
-        function handleAuthCallback() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const state = urlParams.get('state');
-            const savedState = localStorage.getItem('oauth_state');
-            
-            if (code && state === savedState) {
-                // 清除状态值
-                localStorage.removeItem('oauth_state');
-                
-                // 使用授权码获取访问令牌
-                fetch('https://it.ctrip.com/oauth/token', {
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof showUserId !== 'undefined' && showUserId) {
+                fetch('./apiv2/getsparkstatus4site', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/json'
                     },
-                    body: `grant_type=authorization_code&code=${code}&redirect_uri=${encodeURIComponent(window.location.origin)}&client_id=your_client_id&client_secret=your_client_secret`
+                    body: JSON.stringify({
+                        "user_id":userId
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.access_token) {
-                        localStorage.setItem('accessToken', data.access_token);
-                        // 清除URL中的参数
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                    } else {
-                        console.error('获取访问令牌失败');
-                    }
+                    const deviceContainer = document.getElementById('device-container');
+                    const deviceList = data.device_list || [];
+
+                    deviceList.forEach(device => {
+                        const deviceBtn = document.createElement('div');
+                        deviceBtn.className = 'device-btn';
+                        deviceBtn.setAttribute('data-device', device.device_id);
+                        deviceBtn.textContent = device.device_id;
+
+                        if (device.alive === 0) {
+                            deviceBtn.style.backgroundColor = 'green';
+                        } else if (device.alive === 1) {
+                            deviceBtn.style.backgroundColor = 'gray';
+                            deviceBtn.style.pointerEvents = 'none'; // 禁用点击
+                        }
+
+                        deviceContainer.appendChild(deviceBtn);
+                    });
                 })
                 .catch(error => {
-                    console.error('获取访问令牌出错:', error);
+                    console.error('Error fetching device data:', error);
                 });
             }
-        }
-        
-        // 页面加载时检查登录状态和处理授权回调
-        window.addEventListener('load', function() {
-            handleAuthCallback();
-            if (!checkLoginStatus()) {
-                return;
-            }
         });
+
         
         // DOM元素
         const page1 = document.getElementById('page1');
@@ -350,7 +344,7 @@
         // 预加载第四页的所有资源
         function preloadPage4Resources() {
             const setwifiGif = new Image();
-            setwifiGif.src = './setwifi.gif';
+            setwifiGif.src = '../static/setwifi.gif';
         }
         
         // 页面切换函数
