@@ -473,15 +473,22 @@
         
         // 获取WiFi列表
         function fetchWifiList(retryCount = 0) {
-            const maxRetries = 10;
-            const retryDelay = 3000;
+            const maxRetries = 60;
+            const retryDelay = 1000;
+            const timeout = 3000; // 3秒超时
             const stageText = document.querySelector('#page3 .stage');
             
             stageText.textContent = '请连接XINGHUO热点...';
 
-            fetch('http://192.168.255.1/api/wifi_list')
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+            fetch('http://192.168.255.1/api/wifi_list', {
+                signal: controller.signal
+            })
                 .then(response => response.json())
                 .then(data => {
+                    clearTimeout(timeoutId);
                     const select = document.getElementById('wifi-ssid');
                     select.innerHTML = '';
                     select.appendChild(new Option('请选择WiFi', '', true, true));
@@ -493,7 +500,9 @@
                     showPage(page4);
                 })
                 .catch(error => {
-                    stageText.textContent = '获取WiFi列表失败，正在重试...';
+                    clearTimeout(timeoutId);
+                    const errorMessage = error.name === 'AbortError' ? '获取WiFi列表超时' : '获取WiFi列表失败';
+                    stageText.textContent = `${errorMessage}，正在重试...`;
                     if (retryCount < maxRetries) {
                         setTimeout(() => fetchWifiList(retryCount + 1), retryDelay);
                     } else {
