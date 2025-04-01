@@ -65,8 +65,8 @@
         }
         
         .btn {
-            width: 120px;
-            height: 44px;
+            width: 140px;
+            height: 45px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 8px;
@@ -523,6 +523,22 @@
         next2.addEventListener('click', function() {
             showPage(page3);
             fetchWifiList();
+        });
+        
+        // 添加back2按钮的事件监听器
+        back2.addEventListener('click', function() {
+            showPage(page1);
+        });
+        
+        // 添加back3按钮的事件监听器
+        back3.addEventListener('click', function() {
+            showPage(page2);
+        });
+        
+        // 添加back4按钮的事件监听器
+        back4.addEventListener('click', function() {
+            resetConfigUI();
+            showPage(page3);
         });
         
         next4.addEventListener('click', function() {
