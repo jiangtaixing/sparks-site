@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>WiFi配网系统</title>
+    <link rel="stylesheet" href="checkmark.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 360px;
+            height: 640px;
+            background-color: #fff;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-radius: 16px;
+        }
+        
+        .page {
+            width: 100%;
+            height: 100%;
+            padding: 24px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .page.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .btn {
+            width: 120px;
+            height: 44px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            margin: 10px 0;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 44px;
+            color: #fff;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-back {
+            margin-right: 10px;
+            background: linear-gradient(135deg, #e0e0e0 0%, #b0b0b0 100%);
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: auto;
+            padding-bottom: 24px;
+            width: 100%;
+        }
+        
+        .device-btn {
+            width: 200px;
+            height: 44px;
+            background-color: #fff;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            margin: 10px 0;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            line-height: 40px;
+            color: #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .device-btn:hover {
+            background-color: #f0f3ff;
+            transform: translateY(-2px);
+        }
+        
+        .device-btn.selected {
+            background-color: #667eea;
+            color: #fff;
+        }
+        
+        .gif-container {
+            height: 400px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .gif-container img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        .form-group {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            height: 44px;
+            padding: 0 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .loading-animation {
+            display: none;
+            width: 280px;
+            height: 280px;
+            margin: 20px 0;
+            background-color: #fff;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+        }
+        
+        .loading-animation .stage {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #333;
+            text-align: center;
+        }
+
+        .loading-animation .checkmark-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 第一页：选择设备 -->
+        <div class="page active" id="page1">
+            <h2>选择您的星火</h2>
+            <div class="device-btn" data-device="s362225">s362225</div>
+            <div class="device-btn" data-device="S362226">S362226</div>
+            <div class="device-btn" data-device="S362227">S362227</div>
+            <div class="btn-container">
+                <button class="btn" id="next1">下一步</button>
+            </div>
+        </div>
+        
+        <!-- 第二页：设备指导 -->
+        <div class="page" id="page2">
+            <h2>星火设备开机指导</h2>
+            <div class="gif-container">
+                <img src="./connect.gif" alt="设备连接指导">
+            </div>
+            <div class="btn-container">
+                <button class="btn btn-back" id="back2">返回</button>
+                <button class="btn" id="next2">下一步</button>
+            </div>
+        </div>
+        
+        <!-- 第三页：配网准备 -->
+        <div class="page" id="page3">
+            <h2>正在准备配网</h2>
+            <div class="gif-container">
+                <img src="./setwifi.gif" alt="配网准备">
+            </div>
+            <div class="loading-dots" style="margin: 20px 0;">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="stage" style="text-align: center; margin-bottom: 20px;">正在获取WiFi列表...</div>
+            <div class="btn-container">
+                <button class="btn btn-back" id="back3">返回</button>
+            </div>
+        </div>
+        
+        <!-- 第四页：WiFi信息 -->
+        <div class="page" id="page4">
+            <h2>填入您所使用的WIFI</h2>
+            <div class="form-group">
+                <label>WIFI名（SSID）2.4g</label>
+                <select id="wifi-ssid" class="form-control">
+                    <option value="" disabled selected>请选择WiFi</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>WIFI密码</label>
+                <input type="password" id="wifi-password">
+            </div>
+            <div class="btn-container">
+                <button class="btn btn-back" id="back4">返回</button>
+                <button class="btn" id="next4">提交</button>
+            </div>
+        </div>
+        
+        <!-- 第五页：配网结果 -->
+        <div class="page" id="page5">
+            <h2>无线配网</h2>
+            <div class="gif-container" id="gif-container">
+                <img src="./setwifi.gif" alt="配网准备">
+            </div>
+            <style>
+                .progress-list {
+                    width: 100%;
+                    margin: 20px 0;
+                }
+                
+                .progress-item {
+                    display: flex;
+                    align-items: center;
+                    margin: 10px 0;
+                    font-size: 16px;
+                }
+                
+                .checkmark-small-container {
+                    width: 24px;
+                    height: 24px;
+                    margin-right: 10px;
+                    position: relative;
+                }
+                
+                .checkmark-small {
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    display: block;
+                    stroke-width: 2;
+                    stroke: #ccc;
+                    stroke-miterlimit: 10;
+                    margin: 0;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                }
+                
+                .checkmark-small.active .checkmark-small-circle {
+                    stroke-dasharray: 166;
+                    stroke-dashoffset: 166;
+                    stroke: #4caf50;
+                    stroke-width: 2;
+                    stroke-miterlimit: 10;
+                    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+                }
+                
+                .checkmark-small.active .checkmark-small-check {
+                    transform-origin: 50% 50%;
+                    stroke-dasharray: 48;
+                    stroke-dashoffset: 48;
+                    stroke: #4caf50;
+                    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+                }
+                
+                @keyframes stroke {
+                    100% {
+                        stroke-dashoffset: 0;
+                    }
+                }
+
+                .loading-dots {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    margin: 15px 0;
+                    height: 20px;
+                }
+
+                .loading-dots .dot {
+                    width: 8px;
+                    height: 8px;
+                    margin: 0 4px;
+                    background-color: #667eea;
+                    border-radius: 50%;
+                    animation: dotPulse 1.4s infinite ease-in-out;
+                }
+
+                .loading-dots .dot:nth-child(1) {
+                    animation-delay: 0s;
+                }
+
+                .loading-dots .dot:nth-child(2) {
+                    animation-delay: 0.2s;
+                }
+
+                .loading-dots .dot:nth-child(3) {
+                    animation-delay: 0.4s;
+                }
+
+                @keyframes dotPulse {
+                    0%, 80%, 100% { 
+                        transform: scale(0.8);
+                        opacity: 0.5;
+                    }
+                    40% { 
+                        transform: scale(1.2);
+                        opacity: 1;
+                    }
+                }
+            </style>
+            <div class="loading-animation" id="loading-animation">
+                <div class="stage" id="stage-text">配置提交中...</div>
+                <div class="loading-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <div class="progress-list">
+                    <div class="progress-item">
+                        <div class="checkmark-small-container">
+                            <svg class="checkmark-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                <circle class="checkmark-small-circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path class="checkmark-small-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </svg>
+                        </div>
+                        <span>配置发送</span>
+                    </div>
+                    <div class="progress-item">
+                        <div class="checkmark-small-container">
+                            <svg class="checkmark-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                <circle class="checkmark-small-circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path class="checkmark-small-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </svg>
+                        </div>
+                        <span>设备连接</span>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-container">
+                <button class="btn btn-back" id="back4">返回</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let selectedDevice = '';
+        
+        // DOM元素
+        const page1 = document.getElementById('page1');
+        const page2 = document.getElementById('page2');
+        const page3 = document.getElementById('page3');
+        const page4 = document.getElementById('page4');
+        const page5 = document.getElementById('page5');
+        
+        const next1 = document.getElementById('next1');
+        const next2 = document.getElementById('next2');
+        const next4 = document.getElementById('next4');
+        
+        const back2 = document.getElementById('back2');
+        const back3 = document.getElementById('back3');
+        const back4 = document.getElementById('back4');
+        const back5 = document.getElementById('back5');
+        
+        const startConfig = document.getElementById('start-config');
+        
+        const deviceBtns = document.querySelectorAll('.device-btn');
+        const wifiSsid = document.getElementById('wifi-ssid');
+        const wifiPassword = document.getElementById('wifi-password');
+        
+        const gifContainer = document.querySelector('#page4 .gif-container');
+        const loadingAnimation = document.getElementById('loading-animation');
+        const progressBar = document.getElementById('progress-bar');
+        const stageText = document.getElementById('stage-text');
+        
+        // 预加载第四页的所有资源
+        function preloadPage4Resources() {
+            const setwifiGif = new Image();
+            setwifiGif.src = './setwifi.gif';
+        }
+        
+        // 页面切换函数
+        function showPage(pageToShow) {
+            [page1, page2, page3, page4].forEach(page => {
+                page.classList.remove('active');
+            });
+            pageToShow.classList.add('active');
+        }
+        
+        // 设备选择
+        deviceBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                deviceBtns.forEach(b => {
+                    b.classList.remove('selected');
+                    b.style.backgroundColor = '';
+                });
+                this.classList.add('selected');
+                selectedDevice = this.getAttribute('data-device');
+                next1.disabled = false;
+            });
+        });
+        
+        // 获取WiFi列表
+        function fetchWifiList(retryCount = 0) {
+            const maxRetries = 10;
+            const retryDelay = 3000;
+            const stageText = document.querySelector('#page3 .stage');
+            
+            stageText.textContent = '正在获取WiFi列表...';
+
+            fetch('http://192.168.255.1/api/wifi_list')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('wifi-ssid');
+                    select.innerHTML = '';
+                    select.appendChild(new Option('请选择WiFi', '', true, true));
+                    data.ssids.forEach(ssid => {
+                        select.appendChild(new Option(ssid, ssid));
+                    });
+                    
+                    // 自动跳转到WiFi信息页面
+                    showPage(page4);
+                })
+                .catch(error => {
+                    stageText.textContent = '获取WiFi列表失败，正在重试...';
+                    if (retryCount < maxRetries) {
+                        setTimeout(() => fetchWifiList(retryCount + 1), retryDelay);
+                    } else {
+                        stageText.textContent = '获取WiFi列表失败，请返回重试';
+                    }
+                });
+        }
+
+        // 页面导航
+        next1.addEventListener('click', function() {
+            if (!selectedDevice) {
+                alert('请选择一个设备');
+                return;
+            }
+            showPage(page2);
+        });
+        
+        next2.addEventListener('click', function() {
+            showPage(page3);
+            fetchWifiList();
+        });
+        
+        next4.addEventListener('click', function() {
+            if (!wifiSsid.value) {
+                alert('请选择WiFi');
+                return;
+            }
+            if (!wifiPassword.value) {
+                alert('请输入WiFi密码');
+                return;
+            }
+            
+            // 不再跳转到page5，而是直接在当前页面显示配网进度
+            // 创建配网进度动画元素
+            const loadingAnimationElement = document.createElement('div');
+            loadingAnimationElement.className = 'loading-animation';
+            loadingAnimationElement.style.display = 'flex';
+            loadingAnimationElement.innerHTML = `
+                <div class="stage" id="stage-text">配置提交中...</div>
+                <div class="loading-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <div class="progress-list">
+                    <div class="progress-item">
+                        <div class="checkmark-small-container">
+                            <svg class="checkmark-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                <circle class="checkmark-small-circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path class="checkmark-small-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </svg>
+                        </div>
+                        <span>配置发送</span>
+                    </div>
+                    <div class="progress-item">
+                        <div class="checkmark-small-container">
+                            <svg class="checkmark-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                <circle class="checkmark-small-circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path class="checkmark-small-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </svg>
+                        </div>
+                        <span>设备连接</span>
+                    </div>
+                </div>
+            `;
+            
+            // 清空表单区域并添加配网进度动画
+            const formGroups = document.querySelectorAll('#page4 .form-group');
+            formGroups.forEach(group => {
+                group.style.display = 'none';
+            });
+            
+            // 修改标题
+            document.querySelector('#page4 h2').textContent = '无线配网';
+            
+            // 添加配网进度动画到页面
+            page4.insertBefore(loadingAnimationElement, document.querySelector('#page4 .btn-container'));
+            
+            // 禁用返回按钮
+            back4.disabled = true;
+            next4.style.display = 'none';
+            
+            // 开始配网流程
+            startConfigProcess(loadingAnimationElement);
+        });
+        
+        back2.addEventListener('click', function() {
+            showPage(page1);
+        });
+        
+        back3.addEventListener('click', function() {
+            showPage(page2);
+        });
+        
+        back4.addEventListener('click', function() {
+            showPage(page3);
+        });
+        
+        back5.addEventListener('click', function() {
+            showPage(page4);
+        });
+        
+        // 配网过程
+        function updateProgressItem(index, success) {
+    const checkmarks = document.querySelectorAll('.checkmark-small');
+    if (checkmarks[index]) {
+        if (success) {
+            checkmarks[index].classList.add('active');
+        } else {
+            checkmarks[index].classList.remove('active');
+        }
+    }
+}
+
+function startConfigProcess() {
+    // 重置进度列表状态
+    document.querySelectorAll('.checkmark-small').forEach(checkmark => {
+        checkmark.classList.remove('active');
+    });
+
+    // 准备提交的数据
+    const data = {
+        ssid: wifiSsid.value,
+        password: wifiPassword.value,
+        hostname: selectedDevice
+    };
+    
+    let retryCount = 0;
+    const maxRetries = 20;
+    const retryInterval = 3000;
+    const startTime = Date.now();
+    const timeout = 60000;  // 1分钟超时
+    const checkInterval = 4000;  // 4秒轮询间隔
+
+    function sendConfigRequest() {
+        retryCount++;
+        stageText.textContent = '正在发送配置...';
+        
+        fetch('http://192.168.255.1/api/connect', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                gifContainer.style.display = 'none';
+                loadingAnimation.style.display = 'flex';
+                back5.disabled = true;
+                stageText.textContent = '发送成功，等待设备连接';
+                updateProgressItem(0, true); // 更新第一个进度项
+                checkStatus();
+            } else {
+                setTimeout(sendConfigRequest, retryInterval);
+            }
+        })
+        .catch(error => {
+            setTimeout(sendConfigRequest, retryInterval);
+        });
+    }
+
+    function checkStatus() {
+        // 检查是否已经超时
+        if (Date.now() - startTime >= timeout) {
+            // 配网超时，显示gif动画并返回WiFi信息页面
+            gifContainer.style.display = 'flex';
+            loadingAnimation.style.display = 'none';
+            back5.disabled = false;
+            stageText.textContent = '配网超时，请重试';
+            
+            setTimeout(() => {
+                showPage(page4);
+                resetConfigUI();
+            }, 3000);
+            return;
+        }
+
+        fetch('http://192.168.7.140:3000/api/status/' + selectedDevice, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            mode: 'cors',
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.status === 'success') {
+                // 配网成功
+                document.querySelector('.checkmark').style.stroke = '#4caf50';
+                document.querySelector('.checkmark-circle').style.stroke = '#4caf50';
+                stageText.textContent = '配网成功！';
+                gifContainer.style.display = 'none';
+                loadingAnimation.style.display = 'flex';
+                back5.disabled = true;
+                updateProgressItem(1, true); // 更新第二个进度项
+            } else {
+                // 继续检查
+                setTimeout(checkStatus, checkInterval);
+                // 更新状态文本
+                stageText.textContent = '正在等待设备连接...';
+            }
+        })
+        .catch(error => {
+            // 发生错误，继续检查
+            setTimeout(checkStatus, checkInterval);
+        });
+    }
+    
+    // 开始配网请求
+    sendConfigRequest();
+}
+
+        // 重置配网UI状态
+        function resetConfigUI() {
+            // 重置进度列表状态
+            document.querySelectorAll('.checkmark-small').forEach(checkmark => {
+                checkmark.classList.remove('active');
+            });
+            
+            // 重置UI元素
+            gifContainer.style.display = 'flex';
+            loadingAnimation.style.display = 'none';
+            back5.disabled = false;
+        }
+        
+        // 初始化
+        preloadPage4Resources();
+
+        // 当进入第四页时自动开始配网流程
+        function onPage4Show() {
+            startConfigProcess();
+        }
+
+        // 修改showPage函数，处理页面切换逻辑
+        function showPage(pageToShow) {
+            [page1, page2, page3, page4, page5].forEach(page => {
+                page.classList.remove('active');
+            });
+            pageToShow.classList.add('active');
+            
+            // 根据不同页面执行相应的初始化操作
+            if (pageToShow === page3) {
+                // 第三页：配网准备页面，显示加载动画
+                document.querySelector('#page3 .loading-dots').style.display = 'flex';
+            } else if (pageToShow === page5) {
+                // 第五页：配网结果页面，重置UI状态
+                gifContainer.style.display = 'flex';
+                loadingAnimation.style.display = 'none';
+                back5.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

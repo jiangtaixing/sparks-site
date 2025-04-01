@@ -1,0 +1,13 @@
+[
+  {
+    "timestamp": "2025-03-26 10:55:41",
+    "url": "https://www.eki-net.com/Business/member/wb/IMG/globalmenu/logo_jreast.png",
+    "success": true,
+    "total_time_ms": 633,
+    "dns_time_ms": 633,
+    "download_time_ms": 546,
+    "status_code": 200,
+    "content_length": 2909,
+    "content_type": "image/png"
+  }
+]

@@ -56,7 +56,6 @@
             border-radius: 12px;
             overflow: hidden;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
-            position: relative;
         }
         
         .video-container video {
@@ -64,19 +63,44 @@
             height: 100%;
             object-fit: contain;
         }
-
-        video::-webkit-media-controls-fullscreen-button {
-            display: block;
+        
+        .video-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.2s ease;
         }
-
-        video::-webkit-media-controls {
-            display: flex !important;
-            opacity: 1 !important;
+        
+        .video-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
         }
-
-        video::-webkit-media-controls-panel {
-            display: flex !important;
-            opacity: 1 !important;
+        
+        /* 全屏样式 */
+        .fullscreen-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .fullscreen-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
         
         .btn {
@@ -100,31 +124,86 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-
-        /* 全屏时的样式 */
-        .video-container:fullscreen {
-            width: 100vw;
-            height: 100vh;
-            padding: 0;
-            background: #000;
-        }
-
-        .video-container:fullscreen video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>配网指导视频</h2>
         <div class="video-container">
-            <video id="guide-video" controls playsinline>
+            <video id="guide-video" autoplay loop controls playsinline>
                 <source src="setinfo.mp4" type="video/mp4">
+                您的浏览器不支持视频播放
             </video>
+            <button id="fullscreen-btn" class="video-btn">全屏播放</button>
         </div>
         <a href="index.html" class="btn">跳过</a>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('guide-video');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const videoContainer = document.querySelector('.video-container');
+            let isFullscreen = false;
+            
+            // 检测iOS设备
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            
+            // 处理iOS上的自动播放问题
+            if (isIOS) {
+                video.setAttribute('muted', '');
+                video.setAttribute('playsinline', '');
+                
+                // 用户交互后取消静音
+                document.addEventListener('touchstart', function() {
+                    video.muted = false;
+                    video.play();
+                }, {once: true});
+            }
+            
+            // 全屏按钮点击事件
+            fullscreenBtn.addEventListener('click', function() {
+                if (!isFullscreen) {
+                    // 原生全屏API
+                    if (video.requestFullscreen) {
+                        video.requestFullscreen();
+                    } else if (video.webkitRequestFullscreen) { // Safari
+                        video.webkitRequestFullscreen();
+                    } else if (video.msRequestFullscreen) { // IE11
+                        video.msRequestFullscreen();
+                    } else {
+                        // 如果原生API不可用，使用CSS全屏
+                        videoContainer.classList.add('fullscreen-video');
+                        fullscreenBtn.textContent = '退出全屏';
+                        isFullscreen = true;
+                    }
+                } else {
+                    // 退出CSS全屏
+                    videoContainer.classList.remove('fullscreen-video');
+                    fullscreenBtn.textContent = '全屏播放';
+                    isFullscreen = false;
+                }
+            });
+            
+            // 监听原生全屏变化
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+            
+            function handleFullscreenChange() {
+                if (document.fullscreenElement || 
+                    document.webkitFullscreenElement || 
+                    document.mozFullScreenElement || 
+                    document.msFullscreenElement) {
+                    isFullscreen = true;
+                } else {
+                    isFullscreen = false;
+                }
+            }
+            
+            // 确保视频控制条可见
+            video.controls = true;
+        });
+    </script>
 </body>
 </html>
