@@ -676,6 +676,25 @@ function startConfigProcess(loadingAnimationElement) {
                     stageText.textContent = '配网成功！';
                     updateProgressItem(1, true); // 激活第二个进度项（设备连接）
                     back4.disabled = false;
+                    
+                    // 添加总体的成功打勾动画
+                    const loadingDotsElement = loadingAnimationElement.querySelector('.loading-dots');
+                    if (loadingDotsElement) {
+                        loadingDotsElement.style.display = 'none';
+                        
+                        // 创建总体打勾动画
+                        const checkmarkContainer = document.createElement('div');
+                        checkmarkContainer.className = 'checkmark-container';
+                        checkmarkContainer.innerHTML = `
+                            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </svg>
+                        `;
+                        
+                        // 插入到loading-dots的位置
+                        loadingAnimationElement.insertBefore(checkmarkContainer, loadingAnimationElement.querySelector('.progress-list'));
+                    }
                 } else {
                     stageText.textContent = '正在等待设备连接...';
                     setTimeout(pollStatus, checkInterval);
@@ -766,6 +785,25 @@ wiredConfigBtn.addEventListener('click', function() {
         stageText.textContent = '配置成功！';
         updateProgressItem(0, true); // 激活第一个进度项（配置发送）
         updateProgressItem(1, true); // 激活第二个进度项（设备连接）
+        
+        // 添加总体的成功打勾动画
+        const loadingDotsElement = loadingAnimationElement.querySelector('.loading-dots');
+        if (loadingDotsElement) {
+            loadingDotsElement.style.display = 'none';
+            
+            // 创建总体打勾动画
+            const checkmarkContainer = document.createElement('div');
+            checkmarkContainer.className = 'checkmark-container';
+            checkmarkContainer.innerHTML = `
+                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            `;
+            
+            // 插入到loading-dots的位置
+            loadingAnimationElement.insertBefore(checkmarkContainer, loadingAnimationElement.querySelector('.progress-list'));
+        }
     })
     .catch(error => {
         // 显示错误状态
@@ -842,6 +880,25 @@ function startConfigProcess(loadingAnimationElement) {
                     stageText.textContent = '配网成功！';
                     updateProgressItem(1, true); // 激活第二个进度项（设备连接）
                     back4.disabled = false;
+                    
+                    // 添加总体的成功打勾动画
+                    const loadingDotsElement = loadingAnimationElement.querySelector('.loading-dots');
+                    if (loadingDotsElement) {
+                        loadingDotsElement.style.display = 'none';
+                        
+                        // 创建总体打勾动画
+                        const checkmarkContainer = document.createElement('div');
+                        checkmarkContainer.className = 'checkmark-container';
+                        checkmarkContainer.innerHTML = `
+                            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                            </svg>
+                        `;
+                        
+                        // 插入到loading-dots的位置
+                        loadingAnimationElement.insertBefore(checkmarkContainer, loadingAnimationElement.querySelector('.progress-list'));
+                    }
                 } else {
                     stageText.textContent = '正在等待设备连接...';
                     setTimeout(pollStatus, checkInterval);
