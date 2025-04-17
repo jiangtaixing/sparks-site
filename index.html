@@ -71,7 +71,15 @@
             </div>
         </div>
         <div class="page" id="page3">
-            <h2>正在准备配网</h2>
+            <h2>配网准备</h2>
+            <div id="device-tip" style="text-align: center; font-size: 14px; margin-bottom: 2px;">
+                <span style="color: #e53935;">星火名</span>
+                <span style="color: #2196f3;" id="selected-device-name"></span>
+            </div>
+            <div style="color: #888; font-size: 13px; text-align: center; margin-top: 8px; margin-bottom: 4px;">
+                连上热点后如果长时间没有响应点
+                <a id="portal-link" href="http://192.168.255.1/?xinghuo=" style="color: #667eea; text-decoration: underline; font-weight: bold;" target="_blank">传送门</a>
+            </div>
             <div class="gif-container">
                 <img src="./setwifi.gif" alt="配网准备">
             </div>
@@ -100,8 +108,9 @@
             <div class="btn-container">
                 <button class="btn" id="next4">提交</button>
             </div>
-            <div style="text-align: center; margin-top: 10px;">
-                <button class="wired-config-btn" id="wired-config">如不能连接无线，请点这里，插网线使用</button>
+            <div style="text-align: center; margin-top: 10px; font-size: 13px; color: #888;">
+                只使用有线连接点击
+                <a id="wired-config" href="javascript:void(0);" style="color: #667eea; text-decoration: underline; font-weight: bold; font-size: 13px; background: none; border: none; cursor: pointer; padding: 0;">这里</a>
             </div>
         </div>
         <div class="page" id="page5">
@@ -167,7 +176,15 @@
         function showPage(pageId) {
             Object.values(pages).forEach(page => page.classList.remove('active'));
             pages[pageId].classList.add('active');
-            if (pageId === 'page3') fetchWifiList();
+            if (pageId === 'page3') {
+                document.getElementById('selected-device-name').textContent = selectedDevice || '';
+                // 动态设置传送门链接
+                var portalLink = document.getElementById('portal-link');
+                if (portalLink) {
+                    portalLink.href = 'http://192.168.255.1/?xinghuo=' + encodeURIComponent(selectedDevice || '');
+                }
+                fetchWifiList();
+            }
         }
 
         function updateProgress(index, active) {
