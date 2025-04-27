@@ -31,6 +31,9 @@
         .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #666; font-weight: 500; }
         .form-group input, .form-group select { width: 100%; height: 44px; padding: 0 16px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; }
         .form-group input:focus, .form-group select:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .password-container { position: relative; }
+        .password-toggle { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #666; width: 20px; height: 20px; }
+        .password-toggle:hover { color: #667eea; }
         .loading-animation { display: none; width: 280px; height: 280px; margin: 20px 0; background-color: #fff; justify-content: center; align-items: center; flex-direction: column; border-radius: 12px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); padding: 24px; }
         .loading-animation.active { display: flex; }
         .loading-animation .stage { font-size: 16px; margin-bottom: 16px; color: #333; text-align: center; }
@@ -103,7 +106,15 @@
             </div>
             <div class="form-group">
                 <label>WIFI密码</label>
-                <input type="password" id="wifi-password">
+                <div class="password-container">
+                    <input type="password" id="wifi-password">
+                    <span class="password-toggle" id="password-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </span>
+                </div>
             </div>
             <div class="btn-container">
                 <button class="btn" id="next4">提交</button>
@@ -328,6 +339,29 @@
             if (!elements.wifiSsid.value) return alert('请选择WiFi');
             if (!elements.wifiPassword.value) return alert('请输入WiFi密码');
             startConfigProcess(false);
+        });
+        
+        // 密码显示/隐藏功能
+        const passwordToggle = document.getElementById('password-toggle');
+        passwordToggle.addEventListener('click', () => {
+            const passwordInput = elements.wifiPassword;
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordToggle.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <path d="M2 2l20 20"></path>
+                    </svg>
+                `;
+            } else {
+                passwordInput.type = 'password';
+                passwordToggle.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                `;
+            }
         });
         elements.wiredConfig.addEventListener('click', () => {
             if (!selectedDevice) return alert('请先选择一个设备');
